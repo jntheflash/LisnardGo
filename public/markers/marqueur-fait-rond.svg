@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 88" width="88" height="88">
+  <!-- Variante ronde (sans pointe) utilisée par les clusters 100 % collés. -->
+  <circle cx="44" cy="44" r="42" fill="#ffffff" stroke="#2563eb" stroke-width="4"/>
+  <path d="M28 45l11 12 22-25" fill="none" stroke="#2563eb" stroke-width="8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

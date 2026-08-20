@@ -1,0 +1,46 @@
+MIT License
+
+Copyright (c) 2026 Jean-Nicolas HINARD
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Note sur les données et les médias inclus dans ce dépôt
+-------------------------------------------------------
+
+La licence MIT ci-dessus couvre le CODE SOURCE.
+
+Les jeux de données embarqués proviennent de sources publiques et restent
+soumis à leur licence d'origine :
+
+* `data/panneaux.geojson` — inventaire des panneaux d'affichage libre de
+  Nantes Métropole, issu de l'open data de Nantes Métropole, diffusé sous
+  Licence Ouverte / Open Licence (Etalab). Réutilisation libre sous réserve
+  de mentionner la source.
+
+* `public/data/bureaux-vote-44.geojson` — résultats électoraux agrégés par
+  bureau de vote (présidentielle 2022, européennes 2024) construits à partir
+  des données publiées par le Ministère de l'Intérieur et des contours de
+  bureaux de vote diffusés en open data, sous Licence Ouverte (Etalab).
+
+Aucune photographie de personne n'est distribuée avec ce dépôt. Si vous
+ajoutez un portrait (cf. README, section « Marqueur »), assurez-vous de
+disposer des droits nécessaires : il n'est couvert ni par la licence MIT
+ci-dessus, ni par les licences des jeux de données.

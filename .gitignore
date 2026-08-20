@@ -1,0 +1,59 @@
+# =============================================================================
+# Fichiers exclus du dépôt.
+# =============================================================================
+
+# --- Secrets -----------------------------------------------------------------
+# .env contient la clé service_role (ignore la RLS) : ne JAMAIS la committer.
+.env
+.env.*
+!.env.example
+
+# Projet Supabase lié (référence + organisation du projet) — propre à chaque dev.
+supabase/.temp/
+supabase/.branches/
+
+# --- Dépendances & artefacts de build ----------------------------------------
+node_modules
+dist
+dist-ssr
+*.local
+
+# Caches Vite / outillage
+.vite
+node_modules/.vite
+node_modules/.vite-temp
+.cache
+*.tsbuildinfo
+
+# --- Données de travail locales ----------------------------------------------
+# Scripts et jeux de données bruts servant à fabriquer public/data/*.geojson
+# (volumineux, régénérables — cf. README).
+.election-build/
+
+# Portrait du candidat et marqueurs qui en dérivent : image sous droits,
+# fournie par chaque déploiement, jamais publiée (cf. README « Marqueur »).
+public/markers/portrait.png
+public/markers/portrait-marker.png
+public/markers/portrait-round.png
+
+# --- Éditeurs & OS -----------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea
+.claude/
+.DS_Store
+**/.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Logs --------------------------------------------------------------------
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 110" width="88" height="110">
+  <!--
+    Marqueur générique des panneaux « fait ».
+    Pour utiliser un portrait (photo de candidat) à la place, voir le README :
+    déposer public/markers/portrait.png puis lancer `npm run marker`.
+  -->
+  <polygon points="30,76 58,76 44,108" fill="#2563eb"/>
+  <circle cx="44" cy="44" r="41" fill="#ffffff" stroke="#2563eb" stroke-width="4"/>
+  <path d="M28 45l11 12 22-25" fill="none" stroke="#2563eb" stroke-width="8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

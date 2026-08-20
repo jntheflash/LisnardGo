@@ -1,0 +1,146 @@
+@import 'tailwindcss';
+
+/* Thème de l'app — couleurs métier des états de panneaux */
+@theme {
+  --color-brand: #0f172a; /* slate-900 */
+  --color-afaire: #16a34a; /* vert — jamais collé */
+  --color-fait: #2563eb; /* bleu — collé récemment */
+  --color-perime: #dc2626; /* rouge — à refaire */
+}
+
+html,
+body,
+#root {
+  height: 100vh; /* repli pour les navigateurs sans dvh */
+  margin: 0;
+}
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh; /* hauteur visible réelle du mobile (sous la barre d'URL) */
+  }
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Blanc = couleur de la barre du bas : la zone sûre (home indicator) ne
+     révèle plus de bande grise sous la barre. */
+  background: #ffffff;
+  color: #0f172a;
+  /* Respecte les encoches mobiles */
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Zones tactiles larges par défaut */
+button {
+  touch-action: manipulation;
+}
+
+/* Leaflet doit occuper toute la hauteur de son conteneur */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #ebedf0; /* gris clair, accord avec le fond CARTO Positron */
+  font: inherit;
+}
+
+/* --- Bottom sheet panneau (entrée + glissement entre étapes) --- */
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes sheetInRight {
+  from {
+    opacity: 0;
+    transform: translateX(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sheetInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.sheet-enter {
+  animation: sheetUp 0.28s ease both;
+}
+.sheet-fwd {
+  animation: sheetInRight 0.24s ease both;
+}
+.sheet-back {
+  animation: sheetInLeft 0.24s ease both;
+}
+
+/* iOS : empêche la sélection de texte et le « callout » sur l'appui long de la
+   carte, pour que notre appui long (création de panneau) prenne le dessus. */
+.leaflet-container,
+.leaflet-container * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Halo de diffusion : dégradé radial bleu, sans contour (cf. MarkersLayer) */
+.halo-diffusion {
+  fill: url(#haloGradient);
+  stroke: none;
+}
+
+/* Clusters neutres (couleur app) — distincts des couleurs d'état des panneaux */
+.cluster-wrapper {
+  background: transparent;
+}
+
+/* Cluster 100% collé : marqueur « fait » + badge du nombre */
+.cluster-lisnard {
+  position: relative;
+}
+.cluster-lisnard img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cluster-lisnard-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  background: #0f172a;
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.cluster-bubble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #0f172a; /* brand / slate-900 */
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
