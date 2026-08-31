@@ -6,14 +6,12 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
 import { usePanneaux } from '../hooks/usePanneaux'
 import MarkersLayer from '../components/MarkersLayer'
-import MapFilters, { type FiltreEtat } from '../components/MapFilters'
 import LocateButton from '../components/LocateButton'
 import LongPressCreate from '../components/LongPressCreate'
 import PanneauSheet from '../components/PanneauSheet'
 import ElectoralLayer from '../components/ElectoralLayer'
 import ElectoralControl from '../components/ElectoralControl'
 import MapAutoView from '../components/MapAutoView'
-import ZoneSelector from '../components/ZoneSelector'
 import type { Scrutin } from '../data/blocsElectoraux'
 import { readSavedView } from '../lib/mapView'
 import { Spinner } from '../components/ui'
@@ -56,7 +54,6 @@ export default function MapPage() {
     ajouterPanneau,
     retirerPanneau,
   } = usePanneaux()
-  const [filtre, setFiltre] = useState<FiltreEtat>('tout')
   const [selected, setSelected] = useState<PanneauAvecEtat | null>(null)
   // Calque électoral (désactivé par défaut ; données chargées à l'activation)
   const [calqueElectoral, setCalqueElectoral] = useState(false)
@@ -223,22 +220,6 @@ export default function MapPage() {
     setSelected(null)
   }
 
-  const counts = useMemo(
-    () => ({
-      tout: panneaux.length,
-      a_faire: panneaux.filter((p) => p.etat === 'a_faire').length,
-      fait: panneaux.filter((p) => p.etat === 'fait').length,
-      perime: panneaux.filter((p) => p.etat === 'perime').length,
-    }),
-    [panneaux],
-  )
-
-  const visibles = useMemo(
-    () =>
-      filtre === 'tout' ? panneaux : panneaux.filter((p) => p.etat === filtre),
-    [panneaux, filtre],
-  )
-
   return (
     <div className="absolute inset-0">
       <MapContainer
@@ -261,10 +242,9 @@ export default function MapPage() {
           droitesOnly={droitesOnly}
         />
         {!loading && !error && (
-          <MarkersLayer panneaux={visibles} onSelect={setSelected} />
+          <MarkersLayer panneaux={panneaux} onSelect={setSelected} />
         )}
         <LocateButton />
-        <ZoneSelector />
         <MapAutoView
           panneaux={panneaux}
           departement={profile?.departement ?? null}
@@ -273,7 +253,6 @@ export default function MapPage() {
         <LongPressCreate onLongPress={onLongPress} />
       </MapContainer>
 
-      <MapFilters filtre={filtre} onFiltre={setFiltre} counts={counts} />
       <ElectoralControl
         on={calqueElectoral}
         setOn={setCalqueElectoral}

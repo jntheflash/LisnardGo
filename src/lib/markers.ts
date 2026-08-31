@@ -14,8 +14,8 @@ import type { PanneauEtat } from '../types'
  * Ces fichiers `portrait*` sont exclus du dépôt par `.gitignore` : l'image
  * reste locale et n'est jamais publiée.
  */
-export const ICONE_FAIT_URL = '/markers/marqueur-fait.svg'
-export const ICONE_FAIT_RONDE_URL = '/markers/marqueur-fait-rond.svg'
+export const ICONE_FAIT_URL = '/markers/portrait-marker.png'
+export const ICONE_FAIT_RONDE_URL = '/markers/portrait-round.png'
 
 /** Pin coloré (SVG) pour les états a_faire / perime. */
 function pinIcon(color: string): L.DivIcon {

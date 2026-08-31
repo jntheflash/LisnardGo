@@ -104,18 +104,6 @@ export default function StatsPage() {
               info="Nombre total de fois où « J'ai collé » a été validé (l'historique). Recoller un même panneau compte à chaque fois — sert au calcul des points."
             />
             <StatCard
-              label="À jour"
-              value={etatCounts.fait}
-              accent="fait"
-              info="Panneaux collés il y a 14 jours ou moins (encore « frais »)."
-            />
-            <StatCard
-              label="À refaire"
-              value={etatCounts.perime}
-              accent="perime"
-              info="Panneaux collés il y a plus de 14 jours : l'affiche est à recoller."
-            />
-            <StatCard
               label="Jamais collés"
               value={etatCounts.a_faire}
               accent="afaire"

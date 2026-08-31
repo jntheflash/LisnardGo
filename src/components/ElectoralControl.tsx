@@ -30,7 +30,7 @@ export default function ElectoralControl({
   const blocsLegende = droitesOnly ? DROITE_BLOCS : ORDRE_BLOCS
 
   return (
-    <div className="pointer-events-auto absolute right-3 top-[calc(env(safe-area-inset-top)+4.5rem)] z-[1000] flex flex-col items-end gap-2">
+    <div className="pointer-events-auto absolute bottom-[4.5rem] right-3 z-[1000] flex flex-col-reverse items-end gap-2">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Calque électoral"
@@ -46,7 +46,7 @@ export default function ElectoralControl({
       </button>
 
       {open && (
-        <div className="w-64 rounded-2xl bg-white p-4 shadow-xl">
+        <div className="max-h-[60vh] w-64 overflow-y-auto rounded-2xl bg-white p-4 shadow-xl">
           {/* Activation */}
           <div className="flex items-center justify-between">
             <span className="font-semibold text-slate-900">Calque électoral</span>
