@@ -20,29 +20,20 @@ export default function LoginPage() {
       return
     }
     setLoading(true)
-    // Accès sur invitation : on vérifie que l'e-mail est autorisé avant tout envoi.
-    const { data: autorise, error: checkErr } = await supabase.rpc(
-      'is_email_allowed',
-      { p_email: trimmed },
-    )
-    if (checkErr) {
-      setLoading(false)
-      setError('Problème de réseau. Vérifiez votre connexion.')
-      return
-    }
-    if (autorise !== true) {
-      setLoading(false)
-      setError(
-        "Cet e-mail n'est pas autorisé. Contactez l'organisateur pour être ajouté.",
-      )
-      return
-    }
+    // Parcours volontairement UNIFORME : l'écran suivant s'affiche quelle que
+    // soit l'adresse, pour ne jamais révéler qui est membre. Aucune
+    // pré-vérification n'est faite ici — elle constituerait exactement l'oracle
+    // qu'on cherche à supprimer.
+    // `shouldCreateUser: false` : les comptes sont créés par l'invitation, donc
+    // aucun e-mail ne part vers une adresse inconnue et aucun compte parasite
+    // n'est créé.
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmed,
-      options: { shouldCreateUser: true },
+      options: { shouldCreateUser: false },
     })
     setLoading(false)
-    if (error) {
+    // Seules les erreurs qui ne trahissent rien sont affichées.
+    if (error && estErreurAffichable(error.message)) {
       setError(traduireErreur(error.message))
       return
     }
@@ -118,7 +109,8 @@ export default function LoginPage() {
         ) : (
           <form onSubmit={verifyCode} className="space-y-4">
             <p className="text-center text-sm text-slate-600">
-              Code envoyé à <span className="font-medium">{email}</span>
+              Si cette adresse est autorisée, un code vient d'être envoyé à{' '}
+              <span className="font-medium">{email}</span>
             </p>
             <div>
               <label
@@ -161,6 +153,22 @@ export default function LoginPage() {
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * Une erreur n'est affichée que si elle ne révèle PAS l'existence du compte.
+ * Tout le reste (adresse inconnue, inscription refusée…) reste silencieux :
+ * l'utilisateur voit l'écran du code, exactement comme un vrai membre.
+ */
+function estErreurAffichable(msg: string): boolean {
+  const m = msg.toLowerCase()
+  return (
+    m.includes('security purposes') ||
+    m.includes('rate limit') ||
+    m.includes('too many') ||
+    m.includes('network') ||
+    m.includes('failed to fetch')
   )
 }
 

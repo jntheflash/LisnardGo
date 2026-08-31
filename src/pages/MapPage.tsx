@@ -67,6 +67,7 @@ export default function MapPage() {
   // Création manuelle par appui long
   const [pendingLatLng, setPendingLatLng] = useState<{ lat: number; lng: number } | null>(null)
   const [creationBusy, setCreationBusy] = useState(false)
+  const [creationErreur, setCreationErreur] = useState<string | null>(null)
   const [suppressionBusy, setSuppressionBusy] = useState(false)
 
   // Réinitialise l'erreur à chaque ouverture de fiche.
@@ -93,7 +94,13 @@ export default function MapPage() {
       .single()
     if (error || !data) {
       setBusy(false)
-      setActionErreur('Échec de l’enregistrement. Vérifiez votre connexion.')
+      // 45001 : déclencheur limite_collage_par_panneau (un collage / panneau /
+      // 14 j). Ce n'est pas une panne réseau, il ne faut pas le dire.
+      setActionErreur(
+        error?.code === '45001'
+          ? 'Vous avez déjà collé ce panneau il y a moins de 14 jours.'
+          : 'Échec de l’enregistrement. Vérifiez votre connexion.',
+      )
       return false
     }
     // Participants (suivi uniquement, best-effort)
@@ -176,6 +183,7 @@ export default function MapPage() {
   async function creerPanneau() {
     if (!pendingLatLng || !user || creationBusy) return
     setCreationBusy(true)
+    setCreationErreur(null)
     const { data, error } = await supabase
       .from('panneaux')
       .insert({
@@ -187,7 +195,15 @@ export default function MapPage() {
       .select('*')
       .single()
     setCreationBusy(false)
-    if (error || !data) return
+    if (error || !data) {
+      // 45002 : déclencheur limite_panneaux_manuels (15 / membre / 24 h).
+      setCreationErreur(
+        error?.code === '45002'
+          ? 'Vous avez déjà ajouté 15 panneaux aujourd’hui. Réessayez demain.'
+          : 'Création impossible. Réessayez.',
+      )
+      return
+    }
     // Affiche immédiatement le panneau (neuf → « à faire »).
     ajouterPanneau({
       ...(data as PanneauAvecEtat),
@@ -310,7 +326,10 @@ export default function MapPage() {
       {pendingLatLng && (
         <div
           className="fixed inset-0 z-[2000] flex items-end justify-center bg-black/30 p-4 sm:items-center"
-          onClick={() => setPendingLatLng(null)}
+          onClick={() => {
+            setPendingLatLng(null)
+            setCreationErreur(null)
+          }}
         >
           <div
             className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl"
@@ -322,9 +341,15 @@ export default function MapPage() {
             <p className="mt-2 text-sm text-slate-500">
               {pendingLatLng.lat.toFixed(5)}, {pendingLatLng.lng.toFixed(5)}
             </p>
+            {creationErreur && (
+              <p className="mt-3 text-sm text-perime">{creationErreur}</p>
+            )}
             <div className="mt-4 flex gap-2">
               <button
-                onClick={() => setPendingLatLng(null)}
+                onClick={() => {
+                  setPendingLatLng(null)
+                  setCreationErreur(null)
+                }}
                 disabled={creationBusy}
                 className="flex-1 rounded-xl bg-slate-200 px-4 py-3 font-semibold text-slate-700 disabled:opacity-50"
               >

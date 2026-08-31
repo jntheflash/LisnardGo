@@ -20,14 +20,6 @@ interface Member {
   nom?: string | null
 }
 
-/** Normalisation insensible à la casse ET aux accents. */
-const normalize = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .trim()
-
 /** Compte à rebours avant péremption, rafraîchi chaque seconde. */
 function Countdown({ dernierCollage }: { dernierCollage: string }) {
   const [, setTick] = useState(0)
@@ -91,7 +83,10 @@ export default function PanneauSheet({
   const [confirmSuppr, setConfirmSuppr] = useState(false)
 
   // --- État de l'étape 2 (partenaires) ---
-  const [members, setMembers] = useState<Member[]>([])
+  // On mémorise la requête qui a produit ces résultats : « en cours de
+  // recherche » et « résultats affichables » s'en déduisent, sans setState
+  // synchrone dans l'effet (qui provoquerait des rendus en cascade).
+  const [res, setRes] = useState<{ q: string; list: Member[] }>({ q: '', list: [] })
   const [suggestions, setSuggestions] = useState<Member[]>([])
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<Member[]>([])
@@ -114,16 +109,11 @@ export default function PanneauSheet({
     }
   }, [])
 
-  // Charge la liste des membres (nom/prénom, SANS e-mail) + les suggestions.
+  const q = query.trim()
+
+  // Suggestions « Récemment » : liste courte, déjà bornée côté serveur.
   useEffect(() => {
     let cancelled = false
-    supabase
-      .from('v_members')
-      .select('id, display_name, prenom, nom')
-      .then(({ data }) => {
-        if (!cancelled)
-          setMembers(((data ?? []) as Member[]).filter((m) => m.display_name))
-      })
     supabase.rpc('suggested_partners').then(({ data }) => {
       if (!cancelled)
         setSuggestions(((data ?? []) as Member[]).filter((m) => m.display_name))
@@ -132,6 +122,26 @@ export default function PanneauSheet({
       cancelled = true
     }
   }, [])
+
+  // Recherche CÔTÉ SERVEUR : 2 caractères minimum, 10 résultats maximum, jamais
+  // d'e-mail. L'annuaire n'est plus téléchargé — seule la saisie part au serveur.
+  useEffect(() => {
+    if (q.length < 2) return
+    let cancelled = false
+    const t = setTimeout(() => {
+      supabase.rpc('search_members', { q }).then(({ data }) => {
+        if (cancelled) return
+        setRes({
+          q,
+          list: ((data ?? []) as Member[]).filter((m) => m.display_name),
+        })
+      })
+    }, 250) // anti-rebond : une requête par pause de frappe, pas par caractère
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+    }
+  }, [q])
 
   // Fermeture automatique de l'étape de confirmation (~1,5 s).
   useEffect(() => {
@@ -142,17 +152,17 @@ export default function PanneauSheet({
 
   const selectedIds = useMemo(() => new Set(selected.map((s) => s.id)), [selected])
 
-  // Recherche sur prénom + nom UNIQUEMENT (pas d'e-mail), insensible casse + accents.
-  const results = useMemo(() => {
-    const q = normalize(query)
-    if (!q) return []
-    return members
-      .filter((m) => {
-        if (m.id === user?.id || selectedIds.has(m.id)) return false
-        return normalize([m.prenom, m.nom].filter(Boolean).join(' ')).includes(q)
-      })
-      .slice(0, 12)
-  }, [query, members, selectedIds, user])
+  // Le serveur exclut déjà l'utilisateur courant : il reste à masquer les
+  // personnes déjà sélectionnées. Les résultats d'une requête précédente ne
+  // s'affichent jamais pour la requête en cours.
+  const visibles = useMemo(
+    () =>
+      res.q === q
+        ? res.list.filter((m) => m.id !== user?.id && !selectedIds.has(m.id))
+        : [],
+    [res, q, selectedIds, user],
+  )
+  const searching = q.length >= 2 && res.q !== q
 
   const recent = useMemo(
     () =>
@@ -438,10 +448,16 @@ export default function PanneauSheet({
 
               {/* Résultats OU suggestions « Récemment » — zone défilable */}
               <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-2">
-                {query ? (
-                  results.length > 0 ? (
+                {q.length > 0 ? (
+                  q.length < 2 ? (
+                    <p className="py-3 text-sm text-slate-400">
+                      Tapez au moins 2 caractères.
+                    </p>
+                  ) : searching ? (
+                    <p className="py-3 text-sm text-slate-400">Recherche…</p>
+                  ) : visibles.length > 0 ? (
                     <ul className="divide-y divide-slate-100">
-                      {results.map((m) => (
+                      {visibles.map((m) => (
                         <li key={m.id}>
                           <button
                             onMouseDown={(e) => e.preventDefault()}
