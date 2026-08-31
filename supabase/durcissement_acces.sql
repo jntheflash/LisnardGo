@@ -14,6 +14,7 @@
 --   R2  Annuaire exposant l'e-mail de tous les membres
 --   R3  Points falsifiables (collages en série, panneaux manuels illimités)
 --   R4  Membre désactivé capable de se réactiver lui-même
+--   R5  Restrictions déclarées mais jamais appliquées (fonctions ouvertes à `anon`)
 --   R6  Département modifiable par le membre (périmètre non contraignant)
 -- =============================================================================
 
@@ -258,16 +259,42 @@ create trigger trg_limite_panneaux_manuels
   for each row execute function public.limite_panneaux_manuels();
 
 
+-- -----------------------------------------------------------------------------
+-- R5 — Les restrictions déclarées entrent enfin en vigueur
+-- -----------------------------------------------------------------------------
+-- Les `revoke` de schema.sql et roles_admin.sql n'avaient jamais pris effet sur
+-- la base : les six fonctions internes restaient exécutables par le rôle `anon`.
+-- Sans danger direct (elles se filtrent seules et renvoient false / chaîne vide
+-- à un visiteur), mais la défense en profondeur annoncée n'existait pas.
+--
+-- ⚠️ ORDRE IMPÉRATIF : accorder à `authenticated` AVANT de révoquer PUBLIC.
+-- is_member() et is_admin_national() sont appelées par les règles RLS et par le
+-- déclencheur guard_profile_role. Si `authenticated` s'appuyait sur le droit
+-- implicite de PUBLIC, révoquer d'abord couperait l'accès à TOUS les membres
+-- connectés — carte, collages et classement compris.
+
+grant execute on function public.is_member()                    to authenticated;
+grant execute on function public.is_admin()                     to authenticated;
+grant execute on function public.current_email()                to authenticated;
+grant execute on function public.is_admin_national()            to authenticated;
+grant execute on function public.is_referent()                  to authenticated;
+grant execute on function public.current_referent_departement() to authenticated;
+
+revoke all on function public.is_member()                    from public, anon;
+revoke all on function public.is_admin()                     from public, anon;
+revoke all on function public.current_email()                from public, anon;
+revoke all on function public.is_admin_national()            from public, anon;
+revoke all on function public.is_referent()                  from public, anon;
+revoke all on function public.current_referent_departement() from public, anon;
+
+-- Effet de bord attendu et souhaitable : v_classement et
+-- v_panneaux_dernier_collage, qui appellent is_member(), renvoyaient un tableau
+-- vide à un visiteur anonyme ; elles renvoient désormais un refus explicite.
+
+
 -- =============================================================================
 -- RESTE À FAIRE (constaté à l'audit, non corrigé ici)
 -- =============================================================================
--- • R5 partiel : is_member(), is_admin() et current_email() restent exécutables
---   par le rôle `anon` — les `revoke` de schema.sql n'ont jamais pris effet sur
---   cette base. Sans danger (elles renvoient false / chaîne vide à un visiteur),
---   mais la défense en profondeur annoncée n'existe pas. Correctif :
---     revoke all on function public.is_member()    from public, anon;
---     revoke all on function public.is_admin()     from public, anon;
---     revoke all on function public.current_email() from public, anon;
 -- • R7 : aucun rôle ne peut modérer (supprimer le collage ou le tag d'autrui).
 -- • R8 : admin_set_role() n'empêche pas de rétrograder le dernier admin national.
 -- • R9 : le rôle « référent » ne peut pas inviter ; tout l'onboarding national
