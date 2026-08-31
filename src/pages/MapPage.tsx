@@ -19,6 +19,31 @@ import { readSavedView } from '../lib/mapView'
 import { Spinner } from '../components/ui'
 import type { PanneauAvecEtat } from '../types'
 
+/**
+ * Fond de carte CARTO Voyager.
+ *
+ * CARTO exige désormais une clé sur ses tuiles : sans elle, les tuiles sont
+ * toujours servies (HTTP 200) mais avec un filigrane « API KEY REQUIRED »
+ * incrusté dans l'image. La clé est gratuite jusqu'à 5 M de requêtes/mois
+ * (https://carto.com/basemaps/apikey/) et se renseigne dans VITE_MAP_TILES_KEY
+ * — jamais en dur dans le code, ce fichier partant tel quel dans le navigateur.
+ *
+ * Sans clé configurée, on sert quand même la carte (filigranée) plutôt que de
+ * casser l'affichage.
+ */
+const TILES_KEY = import.meta.env.VITE_MAP_TILES_KEY
+
+const TILES_URL =
+  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png' +
+  (TILES_KEY ? `?key=${encodeURIComponent(TILES_KEY)}` : '')
+
+if (!TILES_KEY) {
+  console.warn(
+    '[Carte] VITE_MAP_TILES_KEY absente : les tuiles CARTO afficheront le ' +
+      'filigrane « API KEY REQUIRED ». Clé gratuite : https://carto.com/basemaps/apikey/',
+  )
+}
+
 export default function MapPage() {
   const { user, profile } = useAuth()
   const {
@@ -227,7 +252,7 @@ export default function MapPage() {
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          url={TILES_URL}
           subdomains="abcd"
         />
         <ElectoralLayer
